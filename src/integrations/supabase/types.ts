@@ -14,16 +14,354 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      admin_actions: {
+        Row: {
+          action_type: string
+          admin_id: string
+          chit_id: string
+          created_at: string
+          id: string
+          month_id: string | null
+          payload: Json | null
+        }
+        Insert: {
+          action_type: string
+          admin_id: string
+          chit_id: string
+          created_at?: string
+          id?: string
+          month_id?: string | null
+          payload?: Json | null
+        }
+        Update: {
+          action_type?: string
+          admin_id?: string
+          chit_id?: string
+          created_at?: string
+          id?: string
+          month_id?: string | null
+          payload?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_actions_chit_id_fkey"
+            columns: ["chit_id"]
+            isOneToOne: false
+            referencedRelation: "chits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_actions_month_id_fkey"
+            columns: ["month_id"]
+            isOneToOne: false
+            referencedRelation: "months"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bids: {
+        Row: {
+          bid_amount: number
+          created_at: string
+          id: string
+          member_id: string
+          month_id: string
+        }
+        Insert: {
+          bid_amount: number
+          created_at?: string
+          id?: string
+          member_id: string
+          month_id: string
+        }
+        Update: {
+          bid_amount?: number
+          created_at?: string
+          id?: string
+          member_id?: string
+          month_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bids_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "chit_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bids_month_id_fkey"
+            columns: ["month_id"]
+            isOneToOne: false
+            referencedRelation: "months"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chit_members: {
+        Row: {
+          chit_id: string
+          has_taken: boolean
+          id: string
+          join_date: string
+          taken_month: number | null
+          user_id: string
+        }
+        Insert: {
+          chit_id: string
+          has_taken?: boolean
+          id?: string
+          join_date?: string
+          taken_month?: number | null
+          user_id: string
+        }
+        Update: {
+          chit_id?: string
+          has_taken?: boolean
+          id?: string
+          join_date?: string
+          taken_month?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chit_members_chit_id_fkey"
+            columns: ["chit_id"]
+            isOneToOne: false
+            referencedRelation: "chits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chits: {
+        Row: {
+          base_monthly_payment: number
+          chit_amount: number
+          created_at: string
+          foreman_id: string | null
+          id: string
+          members_count: number
+          months: number
+          name: string
+          post_take_monthly_payment: number
+          start_date: string | null
+          status: string
+        }
+        Insert: {
+          base_monthly_payment: number
+          chit_amount: number
+          created_at?: string
+          foreman_id?: string | null
+          id?: string
+          members_count: number
+          months: number
+          name: string
+          post_take_monthly_payment: number
+          start_date?: string | null
+          status?: string
+        }
+        Update: {
+          base_monthly_payment?: number
+          chit_amount?: number
+          created_at?: string
+          foreman_id?: string | null
+          id?: string
+          members_count?: number
+          months?: number
+          name?: string
+          post_take_monthly_payment?: number
+          start_date?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
+      ledger: {
+        Row: {
+          amount: number
+          chit_id: string
+          created_at: string
+          description: string | null
+          id: string
+          member_id: string
+          month_id: string | null
+          payment_method: string | null
+          type: string
+        }
+        Insert: {
+          amount: number
+          chit_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          member_id: string
+          month_id?: string | null
+          payment_method?: string | null
+          type: string
+        }
+        Update: {
+          amount?: number
+          chit_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          member_id?: string
+          month_id?: string | null
+          payment_method?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ledger_chit_id_fkey"
+            columns: ["chit_id"]
+            isOneToOne: false
+            referencedRelation: "chits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ledger_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "chit_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ledger_month_id_fkey"
+            columns: ["month_id"]
+            isOneToOne: false
+            referencedRelation: "months"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      months: {
+        Row: {
+          admin_selected_member_id: string | null
+          admin_selected_reason: string | null
+          amount_received: number | null
+          auction_closed_at: string | null
+          auction_open: boolean
+          chit_id: string
+          created_at: string
+          id: string
+          month_index: number
+          selection_method: string | null
+          taker_member_id: string | null
+        }
+        Insert: {
+          admin_selected_member_id?: string | null
+          admin_selected_reason?: string | null
+          amount_received?: number | null
+          auction_closed_at?: string | null
+          auction_open?: boolean
+          chit_id: string
+          created_at?: string
+          id?: string
+          month_index: number
+          selection_method?: string | null
+          taker_member_id?: string | null
+        }
+        Update: {
+          admin_selected_member_id?: string | null
+          admin_selected_reason?: string | null
+          amount_received?: number | null
+          auction_closed_at?: string | null
+          auction_open?: boolean
+          chit_id?: string
+          created_at?: string
+          id?: string
+          month_index?: number
+          selection_method?: string | null
+          taker_member_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "months_admin_selected_member_id_fkey"
+            columns: ["admin_selected_member_id"]
+            isOneToOne: false
+            referencedRelation: "chit_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "months_chit_id_fkey"
+            columns: ["chit_id"]
+            isOneToOne: false
+            referencedRelation: "chits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "months_taker_member_id_fkey"
+            columns: ["taker_member_id"]
+            isOneToOne: false
+            referencedRelation: "chit_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          phone: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id: string
+          name: string
+          phone?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          phone?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_chit_admin: {
+        Args: { _chit_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_chit_member: {
+        Args: { _chit_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "member"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +488,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "member"],
+    },
   },
 } as const
