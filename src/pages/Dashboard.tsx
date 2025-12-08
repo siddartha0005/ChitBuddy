@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -5,7 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { LogOut, TrendingUp, Users, Wallet, Plus, Settings } from 'lucide-react';
 
 export default function Dashboard() {
-  const { user, isAdmin, roles, signOut } = useAuth();
+  const { user, isAdmin, signOut } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-background">
@@ -82,7 +84,7 @@ export default function Dashboard() {
               <CardDescription>Manage your chit groups</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-wrap gap-3">
-              <Button>
+              <Button onClick={() => navigate('/chits/create')}>
                 <Plus className="mr-2 h-4 w-4" />
                 Create Chit Group
               </Button>
@@ -110,7 +112,7 @@ export default function Dashboard() {
                   : "You haven't joined any chit groups yet"}
               </p>
               {isAdmin && (
-                <Button>
+                <Button onClick={() => navigate('/chits/create')}>
                   <Plus className="mr-2 h-4 w-4" />
                   Create Chit Group
                 </Button>
