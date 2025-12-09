@@ -8,6 +8,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import CreateChit from "./pages/CreateChit";
+import ChitDetails from "./pages/ChitDetails";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,14 @@ const App = () => (
               element={
                 <ProtectedRoute requireAdmin>
                   <CreateChit />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/chits/:chitId"
+              element={
+                <ProtectedRoute>
+                  <ChitDetails />
                 </ProtectedRoute>
               }
             />
