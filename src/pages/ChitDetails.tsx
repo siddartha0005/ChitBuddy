@@ -285,6 +285,27 @@ export default function ChitDetails() {
       </header>
 
       <main className="container px-4 py-6">
+        {/* Role indicator for this chit */}
+        <Card className="mb-6 border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-lg">
+                  {isForeman ? 'You are the Foreman' : 'You are a Member'}
+                </CardTitle>
+                <CardDescription>
+                  {isForeman 
+                    ? 'You can manage members, select receivers, and approve payments'
+                    : 'You can view details, make payments, and participate in auctions'}
+                </CardDescription>
+              </div>
+              <Badge variant={isForeman ? 'default' : 'secondary'} className="text-sm">
+                {isForeman ? 'Foreman' : 'Member'}
+              </Badge>
+            </div>
+          </CardHeader>
+        </Card>
+
         {/* Chit Summary */}
         <div className="mb-6 grid gap-4 sm:grid-cols-3">
           <Card>
@@ -305,6 +326,7 @@ export default function ChitDetails() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{formatCurrency(chit?.base_monthly_payment || 0)}</div>
+              <p className="text-xs text-muted-foreground">Paid before taking</p>
             </CardContent>
           </Card>
           <Card>
@@ -315,9 +337,66 @@ export default function ChitDetails() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{formatCurrency(chit?.post_take_monthly_payment || 0)}</div>
+              <p className="text-xs text-muted-foreground">Paid after taking</p>
             </CardContent>
           </Card>
         </div>
+
+        {/* Foreman Actions */}
+        {isForeman && (
+          <Card className="mb-6 border-primary/30">
+            <CardHeader>
+              <CardTitle className="text-lg">Foreman Controls</CardTitle>
+              <CardDescription>Manage this chit group</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <Button variant="outline" className="justify-start">
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  Select Monthly Receiver
+                </Button>
+                <Button variant="outline" className="justify-start">
+                  <Clock className="mr-2 h-4 w-4" />
+                  Open Auction
+                </Button>
+                <Button variant="outline" className="justify-start">
+                  <CheckCircle2 className="mr-2 h-4 w-4" />
+                  Approve Payments
+                </Button>
+                <Button variant="outline" className="justify-start">
+                  <Users className="mr-2 h-4 w-4" />
+                  View Ledger
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Member Actions */}
+        {!isForeman && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="text-lg">Your Actions</CardTitle>
+              <CardDescription>Available actions for this chit</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <Button variant="outline" className="justify-start">
+                  <Clock className="mr-2 h-4 w-4" />
+                  View Payment Due
+                </Button>
+                <Button variant="outline" className="justify-start">
+                  <Users className="mr-2 h-4 w-4" />
+                  View Statements
+                </Button>
+                <Button variant="outline" className="justify-start">
+                  <CheckCircle2 className="mr-2 h-4 w-4" />
+                  Participate in Auction
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Members Section */}
         <Card>
@@ -416,7 +495,9 @@ export default function ChitDetails() {
                 <Users className="mb-4 h-12 w-12 text-muted-foreground/50" />
                 <h3 className="mb-2 font-semibold">No members yet</h3>
                 <p className="text-sm text-muted-foreground">
-                  Add members to this chit group to get started
+                  {isForeman 
+                    ? 'Add members to this chit group to get started'
+                    : 'No other members have joined yet'}
                 </p>
               </div>
             ) : (
@@ -435,6 +516,9 @@ export default function ChitDetails() {
                     <TableRow key={member.id}>
                       <TableCell className="font-medium">
                         {member.profile?.name || 'Unknown'}
+                        {member.user_id === user?.id && (
+                          <Badge variant="outline" className="ml-2">You</Badge>
+                        )}
                       </TableCell>
                       <TableCell className="text-muted-foreground">
                         {member.profile?.email || '-'}
@@ -461,8 +545,8 @@ export default function ChitDetails() {
                             variant="ghost"
                             size="icon"
                             onClick={() => removeMember(member.id)}
-                            disabled={member.has_taken}
-                            title={member.has_taken ? 'Cannot remove - already taken' : 'Remove member'}
+                            disabled={member.has_taken || member.user_id === user?.id}
+                            title={member.has_taken ? 'Cannot remove - already taken' : member.user_id === user?.id ? 'Cannot remove yourself' : 'Remove member'}
                           >
                             <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
