@@ -6,13 +6,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Users, TrendingUp, Shield } from 'lucide-react';
+import { Loader2, Users, TrendingUp, Shield, Crown, User } from 'lucide-react';
 import { z } from 'zod';
 
 const emailSchema = z.string().email('Please enter a valid email address');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
 const nameSchema = z.string().min(2, 'Name must be at least 2 characters');
+
+type SignupRole = 'admin' | 'member';
 
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
@@ -21,6 +24,7 @@ export default function Auth() {
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [signupName, setSignupName] = useState('');
+  const [signupRole, setSignupRole] = useState<SignupRole>('member');
   const [errors, setErrors] = useState<Record<string, string>>({});
   
   const { signIn, signUp, user, loading } = useAuth();
@@ -116,7 +120,7 @@ export default function Auth() {
     if (!validateSignup()) return;
     
     setIsLoading(true);
-    const { error } = await signUp(signupEmail, signupPassword, signupName);
+    const { error } = await signUp(signupEmail, signupPassword, signupName, signupRole);
     setIsLoading(false);
     
     if (error) {
@@ -132,7 +136,7 @@ export default function Auth() {
     } else {
       toast({
         title: 'Account created!',
-        description: 'Please check your email to verify your account.'
+        description: `You are now signed up as ${signupRole === 'admin' ? 'an Admin (Foreman)' : 'a Member'}.`
       });
     }
   };
@@ -247,6 +251,40 @@ export default function Auth() {
                 </CardDescription>
                 
                 <form onSubmit={handleSignup} className="space-y-4">
+                  {/* Role Selection */}
+                  <div className="space-y-3">
+                    <Label>I want to sign up as</Label>
+                    <RadioGroup
+                      value={signupRole}
+                      onValueChange={(value) => setSignupRole(value as SignupRole)}
+                      className="grid grid-cols-2 gap-3"
+                      disabled={isLoading}
+                    >
+                      <Label
+                        htmlFor="role-member"
+                        className={`flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 p-4 transition-all hover:bg-accent ${
+                          signupRole === 'member' ? 'border-primary bg-primary/5' : 'border-border'
+                        }`}
+                      >
+                        <RadioGroupItem value="member" id="role-member" className="sr-only" />
+                        <User className={`h-6 w-6 ${signupRole === 'member' ? 'text-primary' : 'text-muted-foreground'}`} />
+                        <span className="font-medium">Member</span>
+                        <span className="text-xs text-muted-foreground text-center">Join chit groups</span>
+                      </Label>
+                      <Label
+                        htmlFor="role-admin"
+                        className={`flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 p-4 transition-all hover:bg-accent ${
+                          signupRole === 'admin' ? 'border-primary bg-primary/5' : 'border-border'
+                        }`}
+                      >
+                        <RadioGroupItem value="admin" id="role-admin" className="sr-only" />
+                        <Crown className={`h-6 w-6 ${signupRole === 'admin' ? 'text-primary' : 'text-muted-foreground'}`} />
+                        <span className="font-medium">Admin</span>
+                        <span className="text-xs text-muted-foreground text-center">Manage chit groups</span>
+                      </Label>
+                    </RadioGroup>
+                  </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="signup-name">Full Name</Label>
                     <Input
