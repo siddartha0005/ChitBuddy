@@ -79,17 +79,43 @@ export default function Dashboard() {
           <p className="text-muted-foreground">{user?.email}</p>
         </div>
 
+        {/* Role-specific Welcome Card */}
+        <Card className="mb-6 border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              {isAdmin ? (
+                <>
+                  <Settings className="h-5 w-5 text-primary" />
+                  Admin Dashboard
+                </>
+              ) : (
+                <>
+                  <Users className="h-5 w-5 text-primary" />
+                  Member Dashboard
+                </>
+              )}
+            </CardTitle>
+            <CardDescription>
+              {isAdmin 
+                ? "Manage chit groups, add members, select monthly receivers, and approve payments"
+                : "View your chit groups, make payments, and track your chit history"}
+            </CardDescription>
+          </CardHeader>
+        </Card>
+
         {/* Quick Stats */}
         <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Chits</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                {isAdmin ? 'Managed Chits' : 'Joined Chits'}
+              </CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{activeChits.length}</div>
               <p className="text-xs text-muted-foreground">
-                {activeChits.length === 0 ? 'No active chit groups yet' : 'Active chit groups'}
+                {activeChits.length === 0 ? 'No active chit groups' : 'Active chit groups'}
               </p>
             </CardContent>
           </Card>
@@ -107,22 +133,26 @@ export default function Dashboard() {
           
           <Card className="sm:col-span-2 lg:col-span-1">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Next Payment</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                {isAdmin ? 'Pending Actions' : 'Next Payment'}
+              </CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">-</div>
-              <p className="text-xs text-muted-foreground">No upcoming payments</p>
+              <p className="text-xs text-muted-foreground">
+                {isAdmin ? 'No pending approvals' : 'No upcoming payments'}
+              </p>
             </CardContent>
           </Card>
         </div>
 
         {/* Admin Actions */}
         {isAdmin && (
-          <Card className="mb-6">
+          <Card className="mb-6 border-primary/30">
             <CardHeader>
-              <CardTitle>Admin Actions</CardTitle>
-              <CardDescription>Manage your chit groups</CardDescription>
+              <CardTitle>Foreman Actions</CardTitle>
+              <CardDescription>Create and manage your chit groups</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-wrap gap-3">
               <Button onClick={() => navigate('/chits/create')}>
@@ -133,11 +163,39 @@ export default function Dashboard() {
           </Card>
         )}
 
+        {/* Member Quick Actions */}
+        {!isAdmin && (
+          <Card className="mb-6 border-secondary">
+            <CardHeader>
+              <CardTitle>Quick Actions</CardTitle>
+              <CardDescription>Access your chit group features</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Button variant="outline" className="justify-start">
+                  <Wallet className="mr-2 h-4 w-4" />
+                  View Payment History
+                </Button>
+                <Button variant="outline" className="justify-start">
+                  <TrendingUp className="mr-2 h-4 w-4" />
+                  View Statements
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Chit Groups List */}
         <Card>
           <CardHeader>
-            <CardTitle>Your Chit Groups</CardTitle>
-            <CardDescription>View and manage your chit fund memberships</CardDescription>
+            <CardTitle>
+              {isAdmin ? 'Your Chit Groups' : 'Chit Memberships'}
+            </CardTitle>
+            <CardDescription>
+              {isAdmin 
+                ? 'Chit groups you manage as foreman' 
+                : 'Chit groups you are a member of'}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -151,7 +209,7 @@ export default function Dashboard() {
                 <p className="mb-4 text-sm text-muted-foreground">
                   {isAdmin 
                     ? "Create your first chit group to get started"
-                    : "You haven't joined any chit groups yet"}
+                    : "You haven't joined any chit groups yet. Ask a foreman to add you."}
                 </p>
                 {isAdmin && (
                   <Button onClick={() => navigate('/chits/create')}>
@@ -162,34 +220,39 @@ export default function Dashboard() {
               </div>
             ) : (
               <div className="space-y-3">
-                {chits.map((chit) => (
-                  <div
-                    key={chit.id}
-                    onClick={() => navigate(`/chits/${chit.id}`)}
-                    className="flex cursor-pointer items-center justify-between rounded-lg border p-4 transition-colors hover:bg-accent"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                        <Users className="h-5 w-5 text-primary" />
+                {chits.map((chit) => {
+                  const isForemanOfChit = chit.foreman_id === user?.id;
+                  return (
+                    <div
+                      key={chit.id}
+                      onClick={() => navigate(`/chits/${chit.id}`)}
+                      className="flex cursor-pointer items-center justify-between rounded-lg border p-4 transition-colors hover:bg-accent"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className={`flex h-10 w-10 items-center justify-center rounded-full ${isForemanOfChit ? 'bg-primary/20' : 'bg-secondary'}`}>
+                          <Users className={`h-5 w-5 ${isForemanOfChit ? 'text-primary' : 'text-muted-foreground'}`} />
+                        </div>
+                        <div>
+                          <h3 className="font-medium">{chit.name}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            {formatCurrency(chit.chit_amount)} • {chit.members_count} members
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="font-medium">{chit.name}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {formatCurrency(chit.chit_amount)} • {chit.members_count} members
-                        </p>
+                      <div className="flex items-center gap-3">
+                        <Badge variant={chit.status === 'active' ? 'default' : 'secondary'}>
+                          {chit.status}
+                        </Badge>
+                        {isForemanOfChit && (
+                          <Badge variant="outline" className="border-primary text-primary">
+                            Foreman
+                          </Badge>
+                        )}
+                        <ChevronRight className="h-5 w-5 text-muted-foreground" />
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <Badge variant={chit.status === 'active' ? 'default' : 'secondary'}>
-                        {chit.status}
-                      </Badge>
-                      {chit.foreman_id === user?.id && (
-                        <Badge variant="outline">Foreman</Badge>
-                      )}
-                      <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </CardContent>
