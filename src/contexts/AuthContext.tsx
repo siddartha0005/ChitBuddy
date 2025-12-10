@@ -70,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUp = async (email: string, password: string, name: string, role: AppRole = 'member') => {
     const redirectUrl = `${window.location.origin}/`;
     
-    const { error, data } = await supabase.auth.signUp({
+    const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -78,15 +78,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         data: { name, role }
       }
     });
-    
-    // If signup succeeded and we have a user, update their role if admin
-    if (!error && data.user && role === 'admin') {
-      // Update the role from default 'member' to 'admin'
-      await supabase
-        .from('user_roles')
-        .update({ role: 'admin' })
-        .eq('user_id', data.user.id);
-    }
     
     return { error: error as Error | null };
   };
