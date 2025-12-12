@@ -8,10 +8,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Users, TrendingUp, Shield, Crown, User } from 'lucide-react';
+import { Loader2, Users, TrendingUp, Shield, Crown, User, Phone } from 'lucide-react';
 import { z } from 'zod';
 
-const emailSchema = z.string().email('Please enter a valid email address');
+const phoneSchema = z.string()
+  .min(10, 'Phone number must be at least 10 digits')
+  .max(15, 'Phone number is too long')
+  .regex(/^[+]?[0-9]+$/, 'Please enter a valid phone number');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
 const nameSchema = z.string().min(2, 'Name must be at least 2 characters');
 
@@ -19,9 +22,9 @@ type SignupRole = 'admin' | 'member';
 
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
-  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPhone, setLoginPhone] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
-  const [signupEmail, setSignupEmail] = useState('');
+  const [signupPhone, setSignupPhone] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [signupName, setSignupName] = useState('');
   const [signupRole, setSignupRole] = useState<SignupRole>('member');
@@ -41,10 +44,10 @@ export default function Auth() {
     const newErrors: Record<string, string> = {};
     
     try {
-      emailSchema.parse(loginEmail);
+      phoneSchema.parse(loginPhone);
     } catch (e) {
       if (e instanceof z.ZodError) {
-        newErrors.loginEmail = e.errors[0].message;
+        newErrors.loginPhone = e.errors[0].message;
       }
     }
     
@@ -72,10 +75,10 @@ export default function Auth() {
     }
     
     try {
-      emailSchema.parse(signupEmail);
+      phoneSchema.parse(signupPhone);
     } catch (e) {
       if (e instanceof z.ZodError) {
-        newErrors.signupEmail = e.errors[0].message;
+        newErrors.signupPhone = e.errors[0].message;
       }
     }
     
@@ -96,7 +99,7 @@ export default function Auth() {
     if (!validateLogin()) return;
     
     setIsLoading(true);
-    const { error } = await signIn(loginEmail, loginPassword);
+    const { error } = await signIn(loginPhone, loginPassword);
     setIsLoading(false);
     
     if (error) {
@@ -104,7 +107,7 @@ export default function Auth() {
         variant: 'destructive',
         title: 'Login failed',
         description: error.message === 'Invalid login credentials' 
-          ? 'Invalid email or password. Please try again.'
+          ? 'Invalid phone number or password. Please try again.'
           : error.message
       });
     } else {
@@ -120,12 +123,12 @@ export default function Auth() {
     if (!validateSignup()) return;
     
     setIsLoading(true);
-    const { error } = await signUp(signupEmail, signupPassword, signupName, signupRole);
+    const { error } = await signUp(signupPhone, signupPassword, signupName, signupRole);
     setIsLoading(false);
     
     if (error) {
       const message = error.message.includes('already registered')
-        ? 'This email is already registered. Please login instead.'
+        ? 'This phone number is already registered. Please login instead.'
         : error.message;
       
       toast({
@@ -197,22 +200,26 @@ export default function Auth() {
               <TabsContent value="login" className="mt-0">
                 <CardTitle className="mb-2 text-xl">Welcome back</CardTitle>
                 <CardDescription className="mb-6">
-                  Enter your credentials to access your account
+                  Enter your phone number and password to login
                 </CardDescription>
                 
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="login-email">Email</Label>
-                    <Input
-                      id="login-email"
-                      type="email"
-                      placeholder="you@example.com"
-                      value={loginEmail}
-                      onChange={(e) => setLoginEmail(e.target.value)}
-                      disabled={isLoading}
-                    />
-                    {errors.loginEmail && (
-                      <p className="text-sm text-destructive">{errors.loginEmail}</p>
+                    <Label htmlFor="login-phone">Phone Number</Label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        id="login-phone"
+                        type="tel"
+                        placeholder="9876543210"
+                        value={loginPhone}
+                        onChange={(e) => setLoginPhone(e.target.value)}
+                        disabled={isLoading}
+                        className="pl-10"
+                      />
+                    </div>
+                    {errors.loginPhone && (
+                      <p className="text-sm text-destructive">{errors.loginPhone}</p>
                     )}
                   </div>
                   
@@ -301,17 +308,22 @@ export default function Auth() {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="signup-email">Email</Label>
-                    <Input
-                      id="signup-email"
-                      type="email"
-                      placeholder="you@example.com"
-                      value={signupEmail}
-                      onChange={(e) => setSignupEmail(e.target.value)}
-                      disabled={isLoading}
-                    />
-                    {errors.signupEmail && (
-                      <p className="text-sm text-destructive">{errors.signupEmail}</p>
+                    <Label htmlFor="signup-phone">Phone Number</Label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        id="signup-phone"
+                        type="tel"
+                        placeholder="9876543210"
+                        value={signupPhone}
+                        onChange={(e) => setSignupPhone(e.target.value)}
+                        disabled={isLoading}
+                        className="pl-10"
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">India +91 will be added automatically</p>
+                    {errors.signupPhone && (
+                      <p className="text-sm text-destructive">{errors.signupPhone}</p>
                     )}
                   </div>
                   

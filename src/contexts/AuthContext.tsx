@@ -10,8 +10,8 @@ interface AuthContextType {
   roles: AppRole[];
   isAdmin: boolean;
   loading: boolean;
-  signUp: (email: string, password: string, name: string, role?: AppRole) => Promise<{ error: Error | null }>;
-  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signUp: (phone: string, password: string, name: string, role?: AppRole) => Promise<{ error: Error | null }>;
+  signIn: (phone: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
 }
 
@@ -67,24 +67,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, name: string, role: AppRole = 'member') => {
-    const redirectUrl = `${window.location.origin}/`;
+  const signUp = async (phone: string, password: string, name: string, role: AppRole = 'member') => {
+    // Format phone number for Supabase (needs to be E.164 format)
+    const formattedPhone = phone.startsWith('+') ? phone : `+91${phone}`;
     
     const { error } = await supabase.auth.signUp({
-      email,
+      phone: formattedPhone,
       password,
       options: {
-        emailRedirectTo: redirectUrl,
-        data: { name, role }
+        data: { name, role, phone: formattedPhone }
       }
     });
     
     return { error: error as Error | null };
   };
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (phone: string, password: string) => {
+    // Format phone number for Supabase (needs to be E.164 format)
+    const formattedPhone = phone.startsWith('+') ? phone : `+91${phone}`;
+    
     const { error } = await supabase.auth.signInWithPassword({
-      email,
+      phone: formattedPhone,
       password
     });
     

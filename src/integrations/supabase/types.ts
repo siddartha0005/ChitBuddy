@@ -297,6 +297,44 @@ export type Database = {
           },
         ]
       }
+      payment_settings: {
+        Row: {
+          account_holder_name: string | null
+          chit_id: string
+          id: string
+          qr_code_url: string | null
+          updated_at: string | null
+          updated_by: string | null
+          upi_id: string | null
+        }
+        Insert: {
+          account_holder_name?: string | null
+          chit_id: string
+          id?: string
+          qr_code_url?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+          upi_id?: string | null
+        }
+        Update: {
+          account_holder_name?: string | null
+          chit_id?: string
+          id?: string
+          qr_code_url?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+          upi_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_settings_chit_id_fkey"
+            columns: ["chit_id"]
+            isOneToOne: true
+            referencedRelation: "chits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
