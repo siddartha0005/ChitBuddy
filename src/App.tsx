@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import CreateChit from "./pages/CreateChit";
 import ChitDetails from "./pages/ChitDetails";
+import JoinChit from "./pages/JoinChit";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -46,6 +47,7 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route path="/join/:chitId" element={<JoinChit />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
