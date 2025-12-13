@@ -5,16 +5,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
 import {
   Table,
   TableBody,
@@ -26,19 +16,17 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { 
   ArrowLeft, 
-  Plus, 
   Users, 
   Loader2, 
   UserPlus, 
   Trash2,
   CheckCircle2,
-  Clock,
-  Copy,
-  QrCode
+  Clock
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/chit-calculations';
 import { UPIQRCodeUpload } from '@/components/payment/UPIQRCodeUpload';
 import { UPIQRCodeDisplay } from '@/components/payment/UPIQRCodeDisplay';
+import { AddMemberDialog } from '@/components/chit/AddMemberDialog';
 
 interface Chit {
   id: string;
@@ -66,26 +54,16 @@ interface ChitMember {
   } | null;
 }
 
-interface Profile {
-  id: string;
-  name: string;
-  email: string | null;
-}
-
 export default function ChitDetails() {
   const { chitId } = useParams<{ chitId: string }>();
   const navigate = useNavigate();
-  const { user, isAdmin } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
 
   const [chit, setChit] = useState<Chit | null>(null);
   const [members, setMembers] = useState<ChitMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [addMemberOpen, setAddMemberOpen] = useState(false);
-  const [searchEmail, setSearchEmail] = useState('');
-  const [searchResults, setSearchResults] = useState<Profile[]>([]);
-  const [searching, setSearching] = useState(false);
-  const [adding, setAdding] = useState(false);
 
   const isForeman = chit?.foreman_id === user?.id;
 
@@ -162,63 +140,6 @@ export default function ChitDetails() {
     setLoading(false);
   };
 
-  const searchUsers = async () => {
-    if (!searchEmail.trim()) return;
-    
-    setSearching(true);
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('id, name, email')
-      .ilike('email', `%${searchEmail}%`)
-      .limit(10);
-
-    if (!error && data) {
-      // Filter out users who are already members
-      const existingUserIds = members.map(m => m.user_id);
-      setSearchResults(data.filter(p => !existingUserIds.includes(p.id)));
-    }
-    setSearching(false);
-  };
-
-  const addMember = async (userId: string) => {
-    if (!chitId || !chit) return;
-
-    // Check if we've reached member limit
-    if (members.length >= chit.members_count) {
-      toast({
-        variant: 'destructive',
-        title: 'Member limit reached',
-        description: `This chit group can only have ${chit.members_count} members`
-      });
-      return;
-    }
-
-    setAdding(true);
-    const { error } = await supabase
-      .from('chit_members')
-      .insert({
-        chit_id: chitId,
-        user_id: userId
-      });
-
-    if (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to add member'
-      });
-    } else {
-      toast({
-        title: 'Member added',
-        description: 'Member has been added to the chit group'
-      });
-      fetchMembers();
-      setSearchResults([]);
-      setSearchEmail('');
-    }
-    setAdding(false);
-  };
-
   const removeMember = async (memberId: string) => {
     const member = members.find(m => m.id === memberId);
     if (member?.has_taken) {
@@ -248,15 +169,6 @@ export default function ChitDetails() {
       });
       fetchMembers();
     }
-  };
-
-  const copyInviteLink = () => {
-    const link = `${window.location.origin}/chits/${chitId}/join`;
-    navigator.clipboard.writeText(link);
-    toast({
-      title: 'Link copied',
-      description: 'Invite link has been copied to clipboard'
-    });
   };
 
   if (loading && !chit) {
@@ -428,77 +340,11 @@ export default function ChitDetails() {
               </CardDescription>
             </div>
             
-            {isForeman && (
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={copyInviteLink}>
-                  <Copy className="mr-2 h-4 w-4" />
-                  Copy Invite Link
-                </Button>
-                
-                <Dialog open={addMemberOpen} onOpenChange={setAddMemberOpen}>
-                  <DialogTrigger asChild>
-                    <Button size="sm">
-                      <UserPlus className="mr-2 h-4 w-4" />
-                      Add Member
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Add Member</DialogTitle>
-                      <DialogDescription>
-                        Search for a user by email to add them to this chit group.
-                      </DialogDescription>
-                    </DialogHeader>
-                    
-                    <div className="space-y-4">
-                      <div className="flex gap-2">
-                        <div className="flex-1">
-                          <Label htmlFor="search-email" className="sr-only">Email</Label>
-                          <Input
-                            id="search-email"
-                            placeholder="Search by email..."
-                            value={searchEmail}
-                            onChange={(e) => setSearchEmail(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && searchUsers()}
-                          />
-                        </div>
-                        <Button onClick={searchUsers} disabled={searching}>
-                          {searching ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Search'}
-                        </Button>
-                      </div>
-
-                      {searchResults.length > 0 && (
-                        <div className="space-y-2">
-                          {searchResults.map((profile) => (
-                            <div
-                              key={profile.id}
-                              className="flex items-center justify-between rounded-lg border p-3"
-                            >
-                              <div>
-                                <p className="font-medium">{profile.name}</p>
-                                <p className="text-sm text-muted-foreground">{profile.email}</p>
-                              </div>
-                              <Button
-                                size="sm"
-                                onClick={() => addMember(profile.id)}
-                                disabled={adding}
-                              >
-                                {adding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-                              </Button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {searchEmail && searchResults.length === 0 && !searching && (
-                        <p className="text-center text-sm text-muted-foreground">
-                          No users found. They need to sign up first.
-                        </p>
-                      )}
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </div>
+            {isForeman && chitId && chit && (
+              <Button size="sm" onClick={() => setAddMemberOpen(true)}>
+                <UserPlus className="mr-2 h-4 w-4" />
+                Add Member
+              </Button>
             )}
           </CardHeader>
           
@@ -577,6 +423,20 @@ export default function ChitDetails() {
           </CardContent>
         </Card>
       </main>
+
+      {/* Add Member Dialog */}
+      {chitId && chit && (
+        <AddMemberDialog
+          open={addMemberOpen}
+          onOpenChange={setAddMemberOpen}
+          chitId={chitId}
+          chitName={chit.name}
+          existingMemberUserIds={members.map(m => m.user_id)}
+          maxMembers={chit.members_count}
+          currentMemberCount={members.length}
+          onMemberAdded={fetchMembers}
+        />
+      )}
     </div>
   );
 }
