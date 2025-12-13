@@ -33,9 +33,12 @@ import {
   Trash2,
   CheckCircle2,
   Clock,
-  Copy
+  Copy,
+  QrCode
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/chit-calculations';
+import { UPIQRCodeUpload } from '@/components/payment/UPIQRCodeUpload';
+import { UPIQRCodeDisplay } from '@/components/payment/UPIQRCodeDisplay';
 
 interface Chit {
   id: string;
@@ -372,6 +375,13 @@ export default function ChitDetails() {
           </Card>
         )}
 
+        {/* UPI Payment Settings for Foreman */}
+        {isForeman && chitId && (
+          <div className="mb-6">
+            <UPIQRCodeUpload chitId={chitId} />
+          </div>
+        )}
+
         {/* Member Actions */}
         {!isForeman && (
           <Card className="mb-6">
@@ -396,6 +406,13 @@ export default function ChitDetails() {
               </div>
             </CardContent>
           </Card>
+        )}
+
+        {/* UPI QR Code Display for Members */}
+        {!isForeman && chitId && (
+          <div className="mb-6">
+            <UPIQRCodeDisplay chitId={chitId} />
+          </div>
         )}
 
         {/* Members Section */}
