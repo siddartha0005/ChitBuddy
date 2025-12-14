@@ -27,6 +27,7 @@ import { formatCurrency } from '@/lib/chit-calculations';
 import { UPIQRCodeUpload } from '@/components/payment/UPIQRCodeUpload';
 import { UPIQRCodeDisplay } from '@/components/payment/UPIQRCodeDisplay';
 import { AddMemberDialog } from '@/components/chit/AddMemberDialog';
+import { RecordOfflinePayment } from '@/components/payment/RecordOfflinePayment';
 
 interface Chit {
   id: string;
@@ -274,10 +275,17 @@ export default function ChitDetails() {
                   <Clock className="mr-2 h-4 w-4" />
                   Open Auction
                 </Button>
-                <Button variant="outline" className="justify-start">
-                  <CheckCircle2 className="mr-2 h-4 w-4" />
-                  Approve Payments
-                </Button>
+                <RecordOfflinePayment
+                  chitId={chitId!}
+                  members={members.map(m => ({
+                    id: m.id,
+                    user_id: m.user_id,
+                    profile: m.profile ? { name: m.profile.name, phone: m.profile.phone } : null
+                  }))}
+                  basePayment={chit?.base_monthly_payment || 0}
+                  postTakePayment={chit?.post_take_monthly_payment || 0}
+                  onPaymentRecorded={() => {}}
+                />
                 <Button variant="outline" className="justify-start">
                   <Users className="mr-2 h-4 w-4" />
                   View Ledger
