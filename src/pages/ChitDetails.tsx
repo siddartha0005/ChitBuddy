@@ -28,6 +28,7 @@ import { UPIQRCodeUpload } from '@/components/payment/UPIQRCodeUpload';
 import { UPIQRCodeDisplay } from '@/components/payment/UPIQRCodeDisplay';
 import { AddMemberDialog } from '@/components/chit/AddMemberDialog';
 import { RecordOfflinePayment } from '@/components/payment/RecordOfflinePayment';
+import { PendingPayments } from '@/components/payment/PendingPayments';
 
 interface Chit {
   id: string;
@@ -293,6 +294,13 @@ export default function ChitDetails() {
               </div>
             </CardContent>
           </Card>
+        )}
+
+        {/* Pending Payments for Foreman */}
+        {isForeman && chitId && (
+          <div className="mb-6">
+            <PendingPayments chitId={chitId} />
+          </div>
         )}
 
         {/* UPI Payment Settings for Foreman */}

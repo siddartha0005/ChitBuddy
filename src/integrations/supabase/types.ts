@@ -179,34 +179,43 @@ export type Database = {
         Row: {
           amount: number
           chit_id: string
+          confirmed_at: string | null
+          confirmed_by: string | null
           created_at: string
           description: string | null
           id: string
           member_id: string
           month_id: string | null
           payment_method: string | null
+          status: string
           type: string
         }
         Insert: {
           amount: number
           chit_id: string
+          confirmed_at?: string | null
+          confirmed_by?: string | null
           created_at?: string
           description?: string | null
           id?: string
           member_id: string
           month_id?: string | null
           payment_method?: string | null
+          status?: string
           type: string
         }
         Update: {
           amount?: number
           chit_id?: string
+          confirmed_at?: string | null
+          confirmed_by?: string | null
           created_at?: string
           description?: string | null
           id?: string
           member_id?: string
           month_id?: string | null
           payment_method?: string | null
+          status?: string
           type?: string
         }
         Relationships: [

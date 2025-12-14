@@ -96,7 +96,7 @@ export function RecordOfflinePayment({
 
       toast({
         title: 'Payment recorded',
-        description: `₹${amount} payment recorded successfully`,
+        description: `₹${amount} payment recorded as pending confirmation`,
       });
 
       setOpen(false);
@@ -133,7 +133,7 @@ export function RecordOfflinePayment({
         <DialogHeader>
           <DialogTitle>Record Offline Payment</DialogTitle>
           <DialogDescription>
-            Manually record a cash or offline payment from a member
+            Manually record a cash or offline payment. Payment will be marked as pending until confirmed.
           </DialogDescription>
         </DialogHeader>
 
