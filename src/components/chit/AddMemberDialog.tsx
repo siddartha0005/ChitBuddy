@@ -81,15 +81,26 @@ export function AddMemberDialog({
     setSearching(true);
     const formattedPhone = formatPhoneForSearch(searchPhone);
     
-    const { data, error } = await supabase
+    // First get profiles matching the phone
+    const { data: profiles, error: profileError } = await supabase
       .from('profiles')
       .select('id, name, phone')
       .or(`phone.ilike.%${searchPhone}%,phone.eq.${formattedPhone}`)
-      .limit(10);
+      .limit(20);
 
-    if (!error && data) {
-      // Filter out users who are already members
-      setSearchResults(data.filter(p => !existingMemberUserIds.includes(p.id)));
+    if (!profileError && profiles) {
+      // Filter to only users with 'member' role who aren't already in the chit
+      const { data: memberRoles } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'member')
+        .in('user_id', profiles.map(p => p.id));
+
+      const memberUserIds = new Set(memberRoles?.map(r => r.user_id) || []);
+      const filteredProfiles = profiles.filter(
+        p => memberUserIds.has(p.id) && !existingMemberUserIds.includes(p.id)
+      );
+      setSearchResults(filteredProfiles);
     }
     setSearching(false);
   };
@@ -145,14 +156,33 @@ export function AddMemberDialog({
     setSearching(true);
     const formattedPhone = formatPhoneForSearch(contact.phone);
     
-    const { data, error } = await supabase
+    const { data: profiles, error } = await supabase
       .from('profiles')
       .select('id, name, phone')
       .or(`phone.ilike.%${contact.phone.replace(/\D/g, '').slice(-10)}%,phone.eq.${formattedPhone}`)
-      .limit(10);
+      .limit(20);
 
-    if (!error && data && data.length > 0) {
-      setSearchResults(data.filter(p => !existingMemberUserIds.includes(p.id)));
+    if (!error && profiles && profiles.length > 0) {
+      // Filter to only users with 'member' role
+      const { data: memberRoles } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'member')
+        .in('user_id', profiles.map(p => p.id));
+
+      const memberUserIds = new Set(memberRoles?.map(r => r.user_id) || []);
+      const filteredProfiles = profiles.filter(
+        p => memberUserIds.has(p.id) && !existingMemberUserIds.includes(p.id)
+      );
+      
+      if (filteredProfiles.length > 0) {
+        setSearchResults(filteredProfiles);
+      } else {
+        toast({
+          title: 'User not found',
+          description: `${contact.name} is not registered as a member. Share the invite link with them!`
+        });
+      }
     } else {
       toast({
         title: 'User not found',
